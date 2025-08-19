@@ -1,0 +1,1004 @@
+openapi: 3.0.0
+info:
+  title: MBackend API
+  version: 1.0.0
+  description: API documentation for the MBackend NestJS project
+servers:
+  - url: http://localhost:3000
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Faq:
+      type: object
+      properties:
+        id:
+          type: integer
+        question:
+          type: string
+        answer:
+          type: string
+        category:
+          type: string
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+        productName:
+          type: string
+        productPrice:
+          type: integer
+        productCount:
+          type: integer
+        productStatus:
+          type: string
+          enum: [AVAILABLE, OUT_OF_STOCK, DISCONTINUED]
+        productCode:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    Payment:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        order_id:
+          type: string
+        payment_id:
+          type: string
+        amount:
+          type: number
+          format: float
+        currency:
+          type: string
+        status:
+          type: string
+          enum: [PENDING, PAID, FAILED, REFUNDED]
+        receipt:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    RewardTarget:
+      type: object
+      properties:
+        id:
+          type: integer
+        referralCount:
+          type: integer
+        reward:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    AdminLoginResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+        message:
+          type: string
+        token:
+          type: string
+    OrderHistory:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        productId:
+          type: integer
+        productName:
+          type: string
+        quantity:
+          type: integer
+        status:
+          type: string
+        orderedAt:
+          type: string
+          format: date-time
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        mobileNumber:
+          type: string
+        gender:
+          type: string
+        address:
+          type: string
+        referralCode:
+          type: string
+        referredByCode:
+          type: string
+        paymentStatus:
+          type: string
+          enum: [PENDING, PAID]
+        reward:
+          type: string
+        referralCount:
+          type: integer
+    WishlistItem:
+      type: object
+      properties:
+        wishlistId:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        productId:
+          type: integer
+        productName:
+          type: string
+        productPrice:
+          type: integer
+        productStatus:
+          type: string
+        productDescription:
+          type: string
+        userId:
+          type: integer
+        userName:
+          type: string
+        userEmail:
+          type: string
+    RazorpayOrder:
+      type: object
+      properties:
+        id:
+          type: string
+        amount:
+          type: integer
+        currency:
+          type: string
+        receipt:
+          type: string
+        status:
+          type: string
+        notes:
+          type: object
+          additionalProperties:
+            type: string
+paths:
+  /:
+    get:
+      summary: Root hello endpoint
+      responses:
+        '200':
+          description: Hello string
+  /faq/createFaq:
+    post:
+      summary: Create a new FAQ
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                question:
+                  type: string
+                answer:
+                  type: string
+                category:
+                  type: string
+      responses:
+        '200':
+          description: FAQ created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Faq'
+  /faq/getAllFaqs:
+    get:
+      summary: Get all FAQs
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of FAQs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Faq'
+  /faq/updateFaq/{id}:
+    put:
+      summary: Update FAQ by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                question:
+                  type: string
+                answer:
+                  type: string
+                category:
+                  type: string
+      responses:
+        '200':
+          description: FAQ updated
+  /faq/deleteFaq/{id}:
+    delete:
+      summary: Delete FAQ by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      responses:
+        '200':
+          description: FAQ deleted
+  /product/add-multiple:
+    post:
+      summary: Add multiple products
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                products:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      productName:
+                        type: string
+                      productCount:
+                        type: integer
+                      productCode:
+                        type: integer
+                      productPrice:
+                        type: integer
+      responses:
+        '200':
+          description: Products added
+  /product/all:
+    get:
+      summary: Get all products
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+  /product/{id}:
+    get:
+      summary: Get product by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      responses:
+        '200':
+          description: Product details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+  /product/order:
+    post:
+      summary: Order a product
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: integer
+                productName:
+                  type: string
+                quantity:
+                  type: integer
+                  default: 1
+      responses:
+        '200':
+          description: Product ordered
+  /product/order-history/{userId}:
+    get:
+      summary: Get order history for a user
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          schema:
+            type: integer
+          required: true
+      responses:
+        '200':
+          description: Order history
+  /product/order-status/{orderId}:
+    post:
+      summary: Update order status
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: orderId
+          schema:
+            type: integer
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+      responses:
+        '200':
+          description: Order status updated
+  /product/update/{id}:
+    post:
+      summary: Update a product
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: Product updated
+  /product/deleteProduct/{id}:
+    delete:
+      summary: Delete a product
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      responses:
+        '200':
+          description: Product deleted
+  /product/order-details/all:
+    get:
+      summary: Get all order details with user and product information
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          required: false
+          description: Page number (default 1)
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+          required: false
+          description: Number of orders per page (default 10)
+      responses:
+        '200':
+          description: List of all order details with user and product information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      orders:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            userId:
+                              type: integer
+                            productId:
+                              type: integer
+                            productName:
+                              type: string
+                            quantity:
+                              type: integer
+                            status:
+                              type: string
+                            orderedAt:
+                              type: string
+                              format: date-time
+                            userName:
+                              type: string
+                            userEmail:
+                              type: string
+                            userMobile:
+                              type: string
+                            userAddress:
+                              type: string
+                            userGender:
+                              type: string
+                            userReferralCode:
+                              type: string
+                            userPaymentStatus:
+                              type: string
+                            productPrice:
+                              type: integer
+                            productCount:
+                              type: integer
+                            productStatus:
+                              type: string
+                            productCode:
+                              type: integer
+                      pagination:
+                        type: object
+                        properties:
+                          page:
+                            type: integer
+                          limit:
+                            type: integer
+                          total:
+                            type: integer
+                          totalPages:
+                            type: integer
+                          hasNext:
+                            type: boolean
+                          hasPrev:
+                            type: boolean
+  /api/payments/create-order:
+    post:
+      summary: Create a Razorpay order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: integer
+                amount:
+                  type: number
+                receipt:
+                  type: string
+                notes:
+                  type: object
+                  additionalProperties:
+                    type: string
+      responses:
+        '201':
+          description: Order created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/RazorpayOrder'
+  /api/payments/webhook:
+    post:
+      summary: Razorpay webhook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Webhook received
+  /api/users/createUsers:
+    post:
+      summary: Create a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+                mobileNumber:
+                  type: string
+                gender:
+                  type: string
+                address:
+                  type: string
+                referralCode:
+                  type: string
+                referredByCode:
+                  type: string
+                paymentStatus:
+                  type: string
+                  enum: [PENDING, PAID]
+                reward:
+                  type: string
+                referralCount:
+                  type: integer
+      responses:
+        '200':
+          description: User created
+  /api/users/getUserById/{id}:
+    get:
+      summary: Get user by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      responses:
+        '200':
+          description: User details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+  /api/users/login:
+    post:
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login response
+  /api/users/referredBy/{referralCode}:
+    get:
+      summary: Get users referred by a code
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: referralCode
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: List of referred users
+  /api/users/referral-stats/{referralCode}:
+    get:
+      summary: Get referral stats
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: referralCode
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Referral stats
+  /api/users/updateUser/{id}:
+    post:
+      summary: Update user details
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                address:
+                  type: string
+                gender:
+                  type: string
+                referral_code:
+                  type: string
+                referred_by_code:
+                  type: string
+                payment_status:
+                  type: string
+                  enum: [PENDING, PAID]
+      responses:
+        '200':
+          description: User updated
+  /api/users/delete/{id}:
+    post:
+      summary: Delete user by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      responses:
+        '200':
+          description: User deleted
+  /api/users/updatePassword/{id}:
+    post:
+      summary: Update user password
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newPassword:
+                  type: string
+      responses:
+        '200':
+          description: Password updated
+  /api/users/all:
+    get:
+      summary: Get all users (paginated)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          required: false
+          description: Page number (default 1)
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+          required: false
+          description: Number of users per page (default 10)
+      responses:
+        '200':
+          description: Paginated list of users
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      users:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            name:
+                              type: string
+                            email:
+                              type: string
+                            mobileNumber:
+                              type: string
+                            gender:
+                              type: string
+                            address:
+                              type: string
+                            referral_code:
+                              type: string
+                            referred_by_code:
+                              type: string
+                            payment_status:
+                              type: string
+                            reward:
+                              type: string
+                            referralCount:
+                              type: integer
+                            created_at:
+                              type: string
+                              format: date-time
+                            updated_at:
+                              type: string
+                              format: date-time
+                      total:
+                        type: integer
+                        description: Total number of users
+                      page:
+                        type: integer
+                        description: Current page number
+                      pageSize:
+                        type: integer
+                        description: Number of users per page
+                      totalPages:
+                        type: integer
+                        description: Total number of pages
+  /api/admin/login:
+    post:
+      summary: Admin login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminLoginResponse'
+        '401':
+          description: Invalid credentials
+  /api/admin/reward-target:
+    post:
+      summary: Add a reward target
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                referralCount:
+                  type: integer
+                reward:
+                  type: string
+      responses:
+        '201':
+          description: Reward target added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RewardTarget'
+  /api/admin/reward-targets:
+    get:
+      summary: Get all reward targets
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of reward targets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RewardTarget'
+  /api/admin/reward-target/update/{id}:
+    post:
+      summary: Update a reward target
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: Reward target updated
+  /api/admin/reward-target/delete/{id}:
+    post:
+      summary: Delete a reward target
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      responses:
+        '200':
+          description: Reward target deleted
+  /api/admin/users-by-referral-count/{count}:
+    get:
+      summary: Get users by referral count with their referred users
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: count
+          schema:
+            type: integer
+          required: true
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                page:
+                  type: integer
+                pageSize:
+                  type: integer
+      responses:
+        '200':
+          description: Users and their referred users
+  /api/admin/approve-reward/{userId}:
+    post:
+      summary: Approve or deliver a reward for a user
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          schema:
+            type: integer
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reward:
+                  type: string
+                  description: The reward to approve (required for approval)
+                status:
+                  type: string
+                  enum: [approved, delivered]
+                  description: Set to 'approved' to approve, or 'delivered' to mark as delivered
+      responses:
+        '200':
+          description: Reward status updated for user
+  /wishlist/add/{userId}:
+    post:
+      summary: Add a product to user's wishlist
+      parameters:
+        - in: path
+          name: userId
+          schema:
+            type: integer
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  description: Product ID
+                productName:
+                  type: string
+                productDescription:
+                  type: string
+      responses:
+        '200':
+          description: Product added to wishlist
+  /wishlist/{userId}:
+    get:
+      summary: Get all wishlist items for a user
+      parameters:
+        - in: path
+          name: userId
+          schema:
+            type: integer
+          required: true
+      responses:
+        '200':
+          description: List of wishlist items for the user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WishlistItem'
